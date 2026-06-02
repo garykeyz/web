@@ -250,11 +250,13 @@ a   { color: inherit; text-decoration: none; }
 
 /* Logo */
 .nav-logo { flex-shrink: 0; display: flex; align-items: center; }
+/* Logo in navbar — preserve original artwork; just ensure white if needed via invert */
 .logo-img {
   height: 44px;
   width: auto;
   object-fit: contain;
-  filter: brightness(0) invert(1);
+  /* Gary Keys logo - 7.PNG is already white/light on transparent — no filter needed */
+  filter: none;
   transition: opacity 0.3s;
 }
 .logo-img:hover { opacity: .75; }
@@ -434,13 +436,14 @@ a   { color: inherit; text-decoration: none; }
 
 .hero-logo-wrap { margin-bottom: 36px; }
 
+/* Hero logo — preserve original artwork */
 .hero-logo {
   height: clamp(72px, 13vw, 120px);
   width: auto;
   object-fit: contain;
   margin-inline: auto;
-  filter: brightness(0) invert(1);
-  opacity: .92;
+  filter: none;
+  opacity: .96;
 }
 .hero-logo-fallback {
   display: none;
@@ -921,42 +924,73 @@ a   { color: inherit; text-decoration: none; }
 
 .clients-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-  gap: 20px;
-  align-items: center;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 16px;
+  align-items: stretch;
 }
 
 .client-logo {
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 20px 16px;
-  aspect-ratio: 16/8;
-  border: 1px solid rgba(255,255,255,.055);
+  gap: 10px;
+  padding: 24px 16px 20px;
+  min-height: 120px;
+  border: 1px solid rgba(255,255,255,.07);
   border-radius: 4px;
-  background: rgba(255,255,255,.018);
+  background: rgba(255,255,255,.025);
   overflow: hidden;
   transition: all .4s var(--ease);
+  text-align: center;
 }
 .client-logo:hover {
-  border-color: rgba(201,168,76,.35);
-  background: rgba(255,255,255,.04);
-  transform: translateY(-3px);
-  box-shadow: 0 0 0 1px rgba(201,168,76,.12), 0 12px 30px rgba(0,0,0,.35);
+  border-color: rgba(201,168,76,.4);
+  background: rgba(255,255,255,.05);
+  transform: translateY(-4px);
+  box-shadow: 0 0 0 1px rgba(201,168,76,.12), 0 16px 36px rgba(0,0,0,.45);
 }
+
+/* The logo image — keep original colors, just optimise for dark bg */
 .client-logo img {
-  width: 100%;
-  height: 100%;
+  max-width: 100%;
+  max-height: 56px;
+  width: auto;
+  height: auto;
   object-fit: contain;
-  /* Force white appearance for all logos */
-  filter: brightness(0) invert(1);
-  opacity: .7;
+  /* Use brightness+contrast to lift logos on dark bg without destroying colors */
+  filter: brightness(1.15) contrast(1.05);
+  opacity: .85;
   transition: opacity .4s var(--ease), filter .4s var(--ease);
+  display: block;
+  flex-shrink: 0;
 }
 .client-logo:hover img {
   opacity: 1;
-  filter: brightness(0) invert(1);
+  filter: brightness(1.25) contrast(1.1);
 }
+
+/* Partner name label below logo */
+.client-name {
+  font-family: var(--f-ui);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,.55);
+  line-height: 1.45;
+  transition: color .4s var(--ease);
+}
+.client-name small {
+  display: block;
+  font-size: 9px;
+  font-weight: 400;
+  letter-spacing: .06em;
+  color: rgba(255,255,255,.32);
+  text-transform: none;
+}
+.client-logo:hover .client-name { color: var(--gold); }
+.client-logo:hover .client-name small { color: rgba(201,168,76,.6); }
 
 /* ===== CONTACT ===== */
 #contact { padding-block: var(--sp); background: var(--dark2); }
@@ -1131,12 +1165,13 @@ a   { color: inherit; text-decoration: none; }
   margin-bottom: 40px;
 }
 
+/* Footer logo — preserve original artwork */
 .footer-logo {
   height: 38px;
   width: auto;
   object-fit: contain;
-  filter: brightness(0) invert(1);
-  opacity: .65;
+  filter: none;
+  opacity: .85;
   margin-bottom: 10px;
 }
 .footer-logo-fallback {
