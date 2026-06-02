@@ -17,6 +17,18 @@
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Grotesk:wght@300;400;500;600;700&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&family=Sedgwick+Ave+Display&display=swap" rel="stylesheet" />
 
   <link rel="stylesheet" href="styles.css" />
+  <style>
+    .lang-switch{display:flex;align-items:center;gap:2px;margin-left:14px;border:1px solid rgba(255,255,255,.15);border-radius:4px;overflow:hidden;flex-shrink:0}
+    .lang-switch a{padding:6px 10px;font-family:'Space Grotesk',sans-serif;font-size:9.5px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.45);text-decoration:none;transition:background .25s,color .25s}
+    .lang-switch a:hover{color:#fff;background:rgba(255,255,255,.07)}
+    .lang-switch a.active{color:#c9a84c;background:rgba(201,168,76,.1)}
+    .lang-switch span{width:1px;height:14px;background:rgba(255,255,255,.12);flex-shrink:0;display:block}
+    .mobile-lang-switch{display:flex;gap:8px;margin-top:28px;padding-top:24px;border-top:1px solid rgba(255,255,255,.06)}
+    .mobile-lang-switch a{font-family:'Space Grotesk',sans-serif;font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.4);padding:8px 16px;border:1px solid rgba(255,255,255,.1);border-radius:4px;text-decoration:none;transition:all .25s}
+    .mobile-lang-switch a:hover{color:#fff;border-color:rgba(255,255,255,.3)}
+    .mobile-lang-switch a.active{color:#c9a84c;border-color:rgba(201,168,76,.4);background:rgba(201,168,76,.08)}
+    @media(max-width:1024px){.lang-switch{display:none}}
+  </style>
 </head>
 <body>
 
