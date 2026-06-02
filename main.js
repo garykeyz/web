@@ -17,6 +17,24 @@ const navbar     = document.getElementById('navbar');
 const navToggle  = document.getElementById('navToggle');
 const mobileMenu = document.getElementById('mobileMenu');
 
+let _scrollY = 0;
+
+function lockScroll() {
+  _scrollY = window.scrollY;
+  document.body.style.position  = 'fixed';
+  document.body.style.top       = `-${_scrollY}px`;
+  document.body.style.width     = '100%';
+  document.body.style.overflowY = 'scroll';
+}
+
+function unlockScroll() {
+  document.body.style.position  = '';
+  document.body.style.top       = '';
+  document.body.style.width     = '';
+  document.body.style.overflowY = '';
+  window.scrollTo(0, _scrollY);
+}
+
 window.addEventListener('scroll', () => {
   navbar.classList.toggle('scrolled', window.scrollY > 60);
 }, { passive: true });
@@ -25,7 +43,7 @@ navToggle.addEventListener('click', () => {
   const open = mobileMenu.classList.toggle('open');
   navToggle.classList.toggle('open', open);
   mobileMenu.setAttribute('aria-hidden', String(!open));
-  document.body.style.overflow = open ? 'hidden' : '';
+  if (open) lockScroll(); else unlockScroll();
 });
 
 mobileMenu.querySelectorAll('.mobile-link, .mobile-book-btn').forEach(el => {
@@ -36,11 +54,11 @@ function closeMobile() {
   mobileMenu.classList.remove('open');
   navToggle.classList.remove('open');
   mobileMenu.setAttribute('aria-hidden', 'true');
-  document.body.style.overflow = '';
+  unlockScroll();
 }
 
 document.addEventListener('click', e => {
-  if (!navbar.contains(e.target) && mobileMenu.classList.contains('open')) closeMobile();
+  if (!navbar.contains(e.target) && !mobileMenu.contains(e.target) && mobileMenu.classList.contains('open')) closeMobile();
 });
 
 // ===== ACTIVE NAV LINK =====
