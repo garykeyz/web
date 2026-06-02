@@ -455,9 +455,9 @@ a   { color: inherit; text-decoration: none; }
 /* Hero logo — mix-blend-mode: screen removes black bg from non-transparent PNGs.
    On a dark background, black pixels become invisible; white/colored pixels show through. */
 .hero-logo {
-  height: clamp(120px, 20vw, 200px);
+  height: clamp(180px, 28vw, 300px);
   width: auto;
-  max-width: 600px;
+  max-width: 760px;
   object-fit: contain;
   margin-inline: auto;
   mix-blend-mode: screen;
@@ -484,16 +484,30 @@ a   { color: inherit; text-decoration: none; }
 }
 
 .hero-title {
-  font-family: var(--f-title);
-  font-size: clamp(5.5rem, 16vw, 13rem);
-  line-height: 0.9;
-  letter-spacing: 0.03em;
+  font-family: 'Permanent Marker', cursive;
+  font-size: clamp(3.2rem, 9vw, 8rem);
+  line-height: 1.05;
+  letter-spacing: 0.01em;
   text-transform: uppercase;
   color: var(--white);
   margin-bottom: 28px;
 }
 .hero-title .title-line { display: block; }
-.hero-title .accent { color: var(--gold); }
+.hero-title .title-white { color: var(--white); }
+.hero-title .title-gold  {
+  color: var(--gold);
+  text-shadow: 0 0 40px rgba(201,168,76,.45), 0 0 80px rgba(201,168,76,.2);
+}
+.hero-title .title-sub {
+  font-family: 'DM Sans', sans-serif;
+  font-style: italic;
+  font-weight: 300;
+  font-size: clamp(1rem, 2.8vw, 2rem);
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,.6);
+  margin-top: 12px;
+}
 
 .hero-sub {
   font-family: var(--f-body);

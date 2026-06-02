@@ -75,14 +75,13 @@ document.querySelectorAll(
   '.reveal-fade, .reveal-up, .reveal-left, .reveal-right, .reveal-scale'
 ).forEach(el => revealObserver.observe(el));
 
-// ===== GLOBAL PARTICLE SYSTEM =====
-// Covers the entire page (fixed canvas), creates floating gold particles
-// visible across ALL sections for a luxury atmosphere
+// ===== GLOBAL EMBER / ASH PARTICLE SYSTEM =====
+// Fixed canvas covering entire viewport — cinematic gold embers across all sections
 (function initGlobalParticles() {
   const canvas = document.getElementById('globalParticles');
   if (!canvas) return;
   const ctx = canvas.getContext('2d');
-  let W, H, animId;
+  let W, H;
 
   function resize() {
     W = canvas.width  = window.innerWidth;
@@ -91,89 +90,105 @@ document.querySelectorAll(
   resize();
   window.addEventListener('resize', resize, { passive: true });
 
-  // Gold and silver color palette
-  const COLORS = [
-    '201,168,76',   // gold
-    '228,195,100',  // bright gold
-    '180,155,65',   // warm gold
-    '220,210,180',  // cream/silver
-    '255,255,255',  // white
+  // Ember color variants — gold, amber, warm cream
+  const EMBER_COLORS = [
+    [201, 168,  76],  // gold
+    [228, 195, 100],  // bright gold
+    [245, 210, 120],  // light gold
+    [180, 140,  50],  // deep amber
+    [255, 235, 160],  // warm cream
+    [255, 255, 220],  // near-white warm
   ];
 
-  // Particle class
-  class Particle {
-    constructor(randomY = false) {
-      this.spawn(randomY);
-    }
+  class Ember {
+    constructor(randomY = false) { this.reset(randomY); }
 
-    spawn(randomY = false) {
+    reset(randomY = false) {
       this.x     = Math.random() * W;
-      this.y     = randomY ? Math.random() * H : H + Math.random() * 60;
-      this.size  = Math.random() * 1.8 + 0.2;
-      this.vx    = (Math.random() - 0.5) * 0.22;
-      this.vy    = -(Math.random() * 0.35 + 0.08);
-      this.alpha = Math.random() * 0.55 + 0.08;
-      this.life  = Math.random();
-      this.decay = Math.random() * 0.005 + 0.002;
-      this.grow  = true;
-      this.color = COLORS[Math.floor(Math.random() * COLORS.length)];
-      // Occasional larger sparkle
-      if (Math.random() < 0.06) this.size *= 2.5;
+      this.y     = randomY ? Math.random() * H : H + 10 + Math.random() * 80;
+      // Size variation: most are tiny (0.5-2px), a few are larger sparkles (3-5px)
+      const roll = Math.random();
+      if      (roll < 0.75) this.r = Math.random() * 1.5 + 0.3;   // fine ash
+      else if (roll < 0.93) this.r = Math.random() * 2.2 + 1.2;   // medium ember
+      else                   this.r = Math.random() * 3.5 + 2.5;   // bright sparkle
+      // Slow upward drift with gentle horizontal sway
+      this.vy    = -(Math.random() * 0.45 + 0.1);
+      this.vx    = (Math.random() - 0.5) * 0.18;
+      // Wobble parameters — sine wave drift like real embers
+      this.wobbleAmp   = Math.random() * 0.6 + 0.1;
+      this.wobbleFreq  = Math.random() * 0.015 + 0.005;
+      this.wobblePhase = Math.random() * Math.PI * 2;
+      this.wobbleTick  = 0;
+      // Life cycle
+      this.maxAlpha = Math.random() * 0.65 + 0.12;
+      this.alpha    = 0;
+      this.life     = 0;   // 0 → 1 → 0
+      this.speed    = Math.random() * 0.008 + 0.003;
+      this.fadeIn   = Math.random() * 0.3 + 0.1;  // fraction of life used to fade in
+      this.color    = EMBER_COLORS[Math.floor(Math.random() * EMBER_COLORS.length)];
+      // Glow radius proportional to size
+      this.glowR    = this.r * (Math.random() * 3 + 4);
     }
 
     update() {
-      this.x += this.vx;
-      this.y += this.vy;
-      if (this.grow) {
-        this.life += this.decay;
-        if (this.life >= 1) { this.life = 1; this.grow = false; }
+      this.life += this.speed;
+      this.wobbleTick += this.wobbleFreq;
+      // Alpha: fade in then fade out
+      if (this.life < this.fadeIn) {
+        this.alpha = (this.life / this.fadeIn) * this.maxAlpha;
+      } else if (this.life < 0.8) {
+        this.alpha = this.maxAlpha;
       } else {
-        this.life -= this.decay * 0.65;
-        if (this.life <= 0 || this.y < -20) { this.spawn(false); }
+        this.alpha = this.maxAlpha * (1 - (this.life - 0.8) / 0.2);
       }
-      if (this.x < -10 || this.x > W + 10) { this.spawn(false); }
+      if (this.life >= 1) { this.reset(false); return; }
+      // Wobble horizontal drift
+      this.x += this.vx + Math.sin(this.wobbleTick + this.wobblePhase) * this.wobbleAmp;
+      this.y += this.vy;
+      if (this.y < -20 || this.x < -30 || this.x > W + 30) { this.reset(false); }
     }
 
     draw() {
-      const a = this.alpha * this.life;
-      if (a < 0.01) return;
+      if (this.alpha < 0.005) return;
+      const [r, g, b] = this.color;
       ctx.save();
-      ctx.globalAlpha = a;
-      ctx.fillStyle = `rgb(${this.color})`;
-      ctx.shadowBlur = this.size * 5;
-      ctx.shadowColor = `rgba(${this.color}, 0.7)`;
+      // Outer glow
+      const grd = ctx.createRadialGradient(this.x, this.y, 0, this.x, this.y, this.glowR);
+      grd.addColorStop(0,   `rgba(${r},${g},${b},${this.alpha * 0.9})`);
+      grd.addColorStop(0.4, `rgba(${r},${g},${b},${this.alpha * 0.4})`);
+      grd.addColorStop(1,   `rgba(${r},${g},${b},0)`);
       ctx.beginPath();
-      ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+      ctx.arc(this.x, this.y, this.glowR, 0, Math.PI * 2);
+      ctx.fillStyle = grd;
+      ctx.fill();
+      // Bright core dot
+      ctx.beginPath();
+      ctx.arc(this.x, this.y, this.r, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(${r},${g},${b},${Math.min(1, this.alpha * 1.6)})`;
       ctx.fill();
       ctx.restore();
     }
   }
 
-  // Light streak class (vertical falling light streaks)
+  // Subtle rising streak (like heat shimmer / light column) — only a few
   class Streak {
-    constructor(randomY = false) {
-      this.spawn(randomY);
-    }
-
-    spawn(randomY = false) {
+    constructor(randomY = false) { this.reset(randomY); }
+    reset(randomY = false) {
       this.x     = Math.random() * W;
-      this.y     = randomY ? Math.random() * (H * 1.5) : H + Math.random() * 200;
-      this.len   = Math.random() * 120 + 40;
-      this.speed = Math.random() * 0.7 + 0.25;
-      this.alpha = Math.random() * 0.09 + 0.015;
-      this.width = Math.random() * 0.8 + 0.15;
+      this.y     = randomY ? Math.random() * H : H + Math.random() * 150;
+      this.len   = Math.random() * 100 + 30;
+      this.speed = Math.random() * 0.5 + 0.15;
+      this.alpha = Math.random() * 0.055 + 0.01;
+      this.width = Math.random() * 0.7 + 0.15;
     }
-
     update() {
       this.y -= this.speed;
-      if (this.y + this.len < -10) { this.spawn(false); }
+      if (this.y + this.len < -10) this.reset(false);
     }
-
     draw() {
       const g = ctx.createLinearGradient(this.x, this.y, this.x, this.y - this.len);
       g.addColorStop(0,   `rgba(201,168,76,0)`);
-      g.addColorStop(0.4, `rgba(201,168,76,${this.alpha})`);
-      g.addColorStop(0.6, `rgba(228,195,100,${this.alpha * 1.2})`);
+      g.addColorStop(0.5, `rgba(228,195,100,${this.alpha})`);
       g.addColorStop(1,   `rgba(201,168,76,0)`);
       ctx.save();
       ctx.strokeStyle = g;
@@ -186,26 +201,17 @@ document.querySelectorAll(
     }
   }
 
-  // 70 particles spread across the visible screen + some streaks
-  const PARTICLE_COUNT = 70;
-  const STREAK_COUNT   = 12;
+  // 80 embers + 8 streaks — premium density without overloading
+  const embers  = Array.from({ length: 80 }, () => new Ember(true));
+  const streaks = Array.from({ length: 8  }, () => new Streak(true));
 
-  const particles = Array.from({ length: PARTICLE_COUNT }, () => new Particle(true));
-  const streaks   = Array.from({ length: STREAK_COUNT },   () => new Streak(true));
-
-  function draw() {
+  function loop() {
     ctx.clearRect(0, 0, W, H);
-
-    // Draw streaks first (behind particles)
     streaks.forEach(s => { s.update(); s.draw(); });
-
-    // Draw particles
-    particles.forEach(p => { p.update(); p.draw(); });
-
-    animId = requestAnimationFrame(draw);
+    embers.forEach(e  => { e.update();  e.draw(); });
+    requestAnimationFrame(loop);
   }
-
-  draw();
+  loop();
 })();
 
 // ===== LIGHTBOX =====
