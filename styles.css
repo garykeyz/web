@@ -209,6 +209,28 @@ a   { color: inherit; text-decoration: none; }
   transform: none !important;
 }
 
+/* ===== GLOBAL PARTICLES CANVAS ===== */
+#globalParticles {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  width: 100%;
+  height: 100%;
+}
+
+/* Ensure all content sits above the particle canvas */
+#navbar       { z-index: 1000; }
+#hero         { z-index: 1; }
+#about        { position: relative; z-index: 1; }
+#services     { position: relative; z-index: 1; }
+#gallery      { position: relative; z-index: 1; }
+#videos       { position: relative; z-index: 1; }
+#clients      { position: relative; z-index: 1; }
+#contact      { position: relative; z-index: 1; }
+#cta          { position: relative; z-index: 1; }
+#footer       { position: relative; z-index: 1; }
+
 /* ===== CURSOR GLOW ===== */
 #cursorGlow {
   pointer-events: none;
@@ -250,16 +272,15 @@ a   { color: inherit; text-decoration: none; }
 
 /* Logo */
 .nav-logo { flex-shrink: 0; display: flex; align-items: center; }
-/* Logo in navbar — preserve original artwork; just ensure white if needed via invert */
+/* Isotipo white PNG — already white on transparent, render as-is */
 .logo-img {
-  height: 44px;
+  height: 48px;
   width: auto;
   object-fit: contain;
-  /* Gary Keys logo - 7.PNG is already white/light on transparent — no filter needed */
   filter: none;
   transition: opacity 0.3s;
 }
-.logo-img:hover { opacity: .75; }
+.logo-img:hover { opacity: .7; }
 .logo-text-fallback {
   display: none;
   font-family: var(--f-title);
@@ -399,17 +420,12 @@ a   { color: inherit; text-decoration: none; }
   overflow: hidden;
 }
 
-#particleCanvas {
-  position: absolute;
-  inset: 0;
-  z-index: 1;
-  pointer-events: none;
-}
+/* old hero canvas removed — using #globalParticles instead */
 
 .hero-noise {
   position: absolute;
   inset: 0;
-  z-index: 2;
+  z-index: 1;
   background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.035'/%3E%3C/svg%3E");
   opacity: .6;
   pointer-events: none;
@@ -418,7 +434,7 @@ a   { color: inherit; text-decoration: none; }
 .hero-gradient {
   position: absolute;
   inset: 0;
-  z-index: 3;
+  z-index: 2;
   background:
     radial-gradient(ellipse 75% 55% at 50% 30%, rgba(201,168,76,.07) 0%, transparent 65%),
     linear-gradient(180deg, transparent 55%, rgba(10,10,10,.85) 100%);
@@ -427,23 +443,26 @@ a   { color: inherit; text-decoration: none; }
 
 .hero-content {
   position: relative;
-  z-index: 4;
+  z-index: 3;
   text-align: center;
   padding: 120px clamp(20px,5vw,60px) 80px;
-  max-width: 900px;
+  max-width: 960px;
   width: 100%;
 }
 
-.hero-logo-wrap { margin-bottom: 36px; }
+.hero-logo-wrap { margin-bottom: 40px; }
 
-/* Hero logo — preserve original artwork */
+/* Hero logo — mix-blend-mode: screen removes black bg from non-transparent PNGs.
+   On a dark background, black pixels become invisible; white/colored pixels show through. */
 .hero-logo {
-  height: clamp(72px, 13vw, 120px);
+  height: clamp(120px, 20vw, 200px);
   width: auto;
+  max-width: 600px;
   object-fit: contain;
   margin-inline: auto;
+  mix-blend-mode: screen;
   filter: none;
-  opacity: .96;
+  opacity: 1;
 }
 .hero-logo-fallback {
   display: none;
@@ -924,8 +943,8 @@ a   { color: inherit; text-decoration: none; }
 
 .clients-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-  gap: 16px;
+  grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+  gap: 14px;
   align-items: stretch;
 }
 
@@ -934,63 +953,64 @@ a   { color: inherit; text-decoration: none; }
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 10px;
-  padding: 24px 16px 20px;
-  min-height: 120px;
-  border: 1px solid rgba(255,255,255,.07);
+  gap: 12px;
+  padding: 28px 18px 22px;
+  min-height: 130px;
+  border: 1px solid rgba(255,255,255,.06);
   border-radius: 4px;
-  background: rgba(255,255,255,.025);
+  background: rgba(255,255,255,.02);
   overflow: hidden;
   transition: all .4s var(--ease);
   text-align: center;
 }
 .client-logo:hover {
-  border-color: rgba(201,168,76,.4);
-  background: rgba(255,255,255,.05);
+  border-color: rgba(201,168,76,.35);
+  background: rgba(255,255,255,.04);
   transform: translateY(-4px);
-  box-shadow: 0 0 0 1px rgba(201,168,76,.12), 0 16px 36px rgba(0,0,0,.45);
+  box-shadow: 0 0 0 1px rgba(201,168,76,.1), 0 16px 40px rgba(0,0,0,.5);
 }
 
-/* The logo image — keep original colors, just optimise for dark bg */
+/* All logos rendered WHITE — consistent, clean, premium on dark background.
+   This matches the reference screenshot exactly (white logos on black). */
 .client-logo img {
-  max-width: 100%;
-  max-height: 56px;
+  max-width: 110px;
+  max-height: 52px;
   width: auto;
   height: auto;
   object-fit: contain;
-  /* Use brightness+contrast to lift logos on dark bg without destroying colors */
-  filter: brightness(1.15) contrast(1.05);
-  opacity: .85;
-  transition: opacity .4s var(--ease), filter .4s var(--ease);
+  filter: brightness(0) invert(1);
+  opacity: .75;
+  transition: opacity .4s var(--ease), filter .4s var(--ease), transform .4s var(--ease);
   display: block;
   flex-shrink: 0;
 }
 .client-logo:hover img {
   opacity: 1;
-  filter: brightness(1.25) contrast(1.1);
+  filter: brightness(0) invert(1);
+  transform: scale(1.06);
 }
 
-/* Partner name label below logo */
+/* Partner name label */
 .client-name {
   font-family: var(--f-ui);
-  font-size: 10px;
+  font-size: 9.5px;
   font-weight: 600;
-  letter-spacing: .08em;
+  letter-spacing: .1em;
   text-transform: uppercase;
-  color: rgba(255,255,255,.55);
-  line-height: 1.45;
+  color: rgba(255,255,255,.4);
+  line-height: 1.5;
   transition: color .4s var(--ease);
 }
 .client-name small {
   display: block;
-  font-size: 9px;
+  font-size: 8.5px;
   font-weight: 400;
-  letter-spacing: .06em;
-  color: rgba(255,255,255,.32);
+  letter-spacing: .05em;
+  color: rgba(255,255,255,.22);
   text-transform: none;
 }
 .client-logo:hover .client-name { color: var(--gold); }
-.client-logo:hover .client-name small { color: rgba(201,168,76,.6); }
+.client-logo:hover .client-name small { color: rgba(201,168,76,.55); }
 
 /* ===== CONTACT ===== */
 #contact { padding-block: var(--sp); background: var(--dark2); }
@@ -1165,13 +1185,14 @@ a   { color: inherit; text-decoration: none; }
   margin-bottom: 40px;
 }
 
-/* Footer logo — preserve original artwork */
+/* Footer logo — mix-blend-mode removes black bg from logo-7.PNG */
 .footer-logo {
-  height: 38px;
+  height: 44px;
   width: auto;
   object-fit: contain;
+  mix-blend-mode: screen;
   filter: none;
-  opacity: .85;
+  opacity: 1;
   margin-bottom: 10px;
 }
 .footer-logo-fallback {
