@@ -969,19 +969,17 @@ a   { color: inherit; text-decoration: none; }
 
 .clients-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
-  gap: 14px;
-  align-items: stretch;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 12px;
 }
 
 .client-logo {
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
-  gap: 12px;
-  padding: 28px 18px 22px;
-  min-height: 130px;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 28px 20px 20px;
   border: 1px solid rgba(255,255,255,.06);
   border-radius: 4px;
   background: rgba(255,255,255,.02);
@@ -996,43 +994,49 @@ a   { color: inherit; text-decoration: none; }
   box-shadow: 0 0 0 1px rgba(201,168,76,.1), 0 16px 40px rgba(0,0,0,.5);
 }
 
-/* All logos rendered WHITE — consistent, clean, premium on dark background.
-   This matches the reference screenshot exactly (white logos on black). */
+/* Fixed image container — all logos occupy the exact same bounding box */
+.client-logo-img-wrap {
+  width: 100%;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
 .client-logo img {
-  max-width: 110px;
-  max-height: 52px;
-  width: auto;
-  height: auto;
+  width: 100%;
+  height: 100%;
+  max-width: 120px;
+  max-height: 56px;
   object-fit: contain;
   filter: brightness(0) invert(1);
-  opacity: .75;
-  transition: opacity .4s var(--ease), filter .4s var(--ease), transform .4s var(--ease);
+  opacity: .72;
+  transition: opacity .4s var(--ease), transform .4s var(--ease);
   display: block;
-  flex-shrink: 0;
 }
 .client-logo:hover img {
   opacity: 1;
-  filter: brightness(0) invert(1);
   transform: scale(1.06);
 }
 
 /* Partner name label */
 .client-name {
   font-family: var(--f-ui);
-  font-size: 9.5px;
+  font-size: 9px;
   font-weight: 600;
   letter-spacing: .1em;
   text-transform: uppercase;
-  color: rgba(255,255,255,.4);
+  color: rgba(255,255,255,.38);
   line-height: 1.5;
   transition: color .4s var(--ease);
 }
 .client-name small {
   display: block;
-  font-size: 8.5px;
+  font-size: 8px;
   font-weight: 400;
   letter-spacing: .05em;
-  color: rgba(255,255,255,.22);
+  color: rgba(255,255,255,.2);
   text-transform: none;
 }
 .client-logo:hover .client-name { color: var(--gold); }
@@ -1286,6 +1290,7 @@ a   { color: inherit; text-decoration: none; }
 @media (max-width: 1100px) {
   .services-grid { grid-template-columns: repeat(4, 1fr); }
   .videos-grid   { grid-template-columns: repeat(3, 1fr); }
+  .clients-grid  { grid-template-columns: repeat(4, 1fr); }
 }
 
 @media (max-width: 1024px) {
