@@ -1,244 +1,230 @@
-/* ========================================
-   GARY KEYZ — Main JavaScript
-======================================== */
+/* ============================================================
+   GARY KEYZ — Main JS
+   Navbar · Particles · Scroll reveal · Lightbox · Video modal
+============================================================ */
+
+// ===== CURSOR GLOW (desktop only) =====
+if (window.innerWidth > 1024) {
+  const glow = document.getElementById('cursorGlow');
+  document.addEventListener('mousemove', e => {
+    glow.style.left = e.clientX + 'px';
+    glow.style.top  = e.clientY + 'px';
+  }, { passive: true });
+}
 
 // ===== NAVBAR =====
-const navbar = document.getElementById('navbar');
+const navbar    = document.getElementById('navbar');
 const navToggle = document.getElementById('navToggle');
 const mobileMenu = document.getElementById('mobileMenu');
-const mobileLinks = document.querySelectorAll('.mobile-link');
 
 window.addEventListener('scroll', () => {
-  if (window.scrollY > 60) {
-    navbar.classList.add('scrolled');
-  } else {
-    navbar.classList.remove('scrolled');
-  }
+  navbar.classList.toggle('scrolled', window.scrollY > 60);
 }, { passive: true });
 
 navToggle.addEventListener('click', () => {
-  const isOpen = mobileMenu.classList.toggle('open');
-  navToggle.classList.toggle('active', isOpen);
-  document.body.style.overflow = isOpen ? 'hidden' : '';
+  const open = mobileMenu.classList.toggle('open');
+  navToggle.classList.toggle('open', open);
+  mobileMenu.setAttribute('aria-hidden', String(!open));
+  document.body.style.overflow = open ? 'hidden' : '';
 });
 
-mobileLinks.forEach(link => {
-  link.addEventListener('click', () => {
-    mobileMenu.classList.remove('open');
-    navToggle.classList.remove('active');
-    document.body.style.overflow = '';
-  });
+// close mobile on link click
+mobileMenu.querySelectorAll('.mobile-link, .mobile-book-btn').forEach(el => {
+  el.addEventListener('click', closeMobile);
 });
 
-// Close mobile menu on outside click
-document.addEventListener('click', (e) => {
-  if (!navbar.contains(e.target) && mobileMenu.classList.contains('open')) {
-    mobileMenu.classList.remove('open');
-    navToggle.classList.remove('active');
-    document.body.style.overflow = '';
-  }
+function closeMobile() {
+  mobileMenu.classList.remove('open');
+  navToggle.classList.remove('open');
+  mobileMenu.setAttribute('aria-hidden', 'true');
+  document.body.style.overflow = '';
+}
+
+// close on outside click
+document.addEventListener('click', e => {
+  if (!navbar.contains(e.target) && mobileMenu.classList.contains('open')) closeMobile();
 });
 
-// ===== SCROLL REVEAL =====
-const revealObserver = new IntersectionObserver((entries) => {
+// ===== ACTIVE NAV LINK =====
+const navLinks = document.querySelectorAll('.nav-link');
+const sections = document.querySelectorAll('section[id]');
+
+const activeSectionObserver = new IntersectionObserver(entries => {
   entries.forEach(entry => {
     if (entry.isIntersecting) {
-      entry.target.classList.add('visible');
+      const id = entry.target.id;
+      navLinks.forEach(link => {
+        link.classList.toggle('active', link.getAttribute('href') === `#${id}`);
+      });
     }
   });
-}, {
-  threshold: 0.1,
-  rootMargin: '0px 0px -40px 0px'
-});
+}, { threshold: 0.35 });
 
-document.querySelectorAll('.reveal-up, .reveal-left, .reveal-right, .reveal-scale').forEach(el => {
-  revealObserver.observe(el);
-});
+sections.forEach(s => activeSectionObserver.observe(s));
+
+// ===== SCROLL REVEAL =====
+const revealObserver = new IntersectionObserver(entries => {
+  entries.forEach(entry => {
+    if (!entry.isIntersecting) return;
+    const el    = entry.target;
+    const delay = parseInt(el.dataset.delay || '0', 10);
+    setTimeout(() => el.classList.add('revealed'), delay);
+    revealObserver.unobserve(el);
+  });
+}, { threshold: 0.1, rootMargin: '0px 0px -36px 0px' });
+
+document.querySelectorAll(
+  '.reveal-fade, .reveal-up, .reveal-left, .reveal-right, .reveal-scale'
+).forEach(el => revealObserver.observe(el));
 
 // ===== PARTICLE CANVAS =====
 (function initParticles() {
   const canvas = document.getElementById('particleCanvas');
   if (!canvas) return;
   const ctx = canvas.getContext('2d');
-
-  let W, H;
-  const particles = [];
-  const PARTICLE_COUNT = 80;
+  let W, H, animId;
 
   function resize() {
-    W = canvas.width = window.innerWidth;
-    H = canvas.height = window.innerHeight;
+    W = canvas.width  = canvas.offsetWidth;
+    H = canvas.height = canvas.offsetHeight;
   }
-
   resize();
   window.addEventListener('resize', resize, { passive: true });
 
-  class Particle {
-    constructor() { this.reset(); }
-    reset() {
-      this.x = Math.random() * W;
-      this.y = Math.random() * H;
-      this.size = Math.random() * 1.8 + 0.3;
-      this.speedX = (Math.random() - 0.5) * 0.3;
-      this.speedY = (Math.random() - 0.5) * 0.3 - 0.1;
-      this.opacity = Math.random() * 0.5 + 0.1;
-      this.life = Math.random();
-      this.maxLife = Math.random() * 0.02 + 0.003;
-      this.growing = true;
-      // Gold, silver, or white tones
-      const palette = ['201,168,76', '232,201,106', '184,184,184', '255,255,255'];
-      this.color = palette[Math.floor(Math.random() * palette.length)];
-    }
-    update() {
-      this.x += this.speedX;
-      this.y += this.speedY;
-      if (this.growing) {
-        this.life += this.maxLife;
-        if (this.life >= 1) { this.growing = false; this.life = 1; }
-      } else {
-        this.life -= this.maxLife * 0.7;
-        if (this.life <= 0) { this.reset(); }
-      }
-      if (this.y < -10 || this.x < -10 || this.x > W + 10) this.reset();
-    }
-    draw() {
-      const alpha = this.opacity * this.life;
-      ctx.save();
-      ctx.globalAlpha = alpha;
-      ctx.fillStyle = `rgba(${this.color}, 1)`;
-      ctx.shadowBlur = this.size * 4;
-      ctx.shadowColor = `rgba(${this.color}, 0.6)`;
-      ctx.beginPath();
-      ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.restore();
-    }
+  // Particles
+  const COLORS = ['201,168,76', '232,201,106', '200,200,200', '255,255,255'];
+  const particles = Array.from({ length: 90 }, () => makeParticle(true));
+
+  function makeParticle(randomY = false) {
+    return {
+      x:      Math.random() * (W || window.innerWidth),
+      y:      randomY ? Math.random() * (H || window.innerHeight) : (H || window.innerHeight) + 10,
+      size:   Math.random() * 1.6 + 0.2,
+      vx:     (Math.random() - 0.5) * 0.25,
+      vy:     -(Math.random() * 0.4 + 0.1),
+      alpha:  Math.random() * 0.55 + 0.1,
+      life:   Math.random(),
+      decay:  Math.random() * 0.006 + 0.002,
+      grow:   true,
+      color:  COLORS[Math.floor(Math.random() * COLORS.length)],
+    };
   }
 
-  for (let i = 0; i < PARTICLE_COUNT; i++) {
-    const p = new Particle();
-    p.x = Math.random() * W;
-    p.y = Math.random() * H;
-    particles.push(p);
+  // Streaks
+  const streaks = Array.from({ length: 10 }, () => makeStreak(true));
+
+  function makeStreak(randomY = false) {
+    return {
+      x:      Math.random() * (W || window.innerWidth),
+      y:      randomY ? Math.random() * (H || window.innerHeight) : (H || window.innerHeight) + 150,
+      len:    Math.random() * 130 + 50,
+      speed:  Math.random() * 0.9 + 0.3,
+      alpha:  Math.random() * 0.07 + 0.01,
+      width:  Math.random() * 0.9 + 0.2,
+    };
   }
 
-  // Light streaks
-  const streaks = Array.from({ length: 8 }, () => ({
-    x: Math.random() * W,
-    y: Math.random() * H,
-    length: Math.random() * 120 + 40,
-    angle: Math.PI * 1.5 + (Math.random() - 0.5) * 0.3,
-    speed: Math.random() * 0.8 + 0.3,
-    opacity: Math.random() * 0.08 + 0.02,
-    width: Math.random() * 1 + 0.3,
-  }));
+  function draw() {
+    ctx.clearRect(0, 0, W, H);
 
-  function drawStreaks() {
+    // streaks
     streaks.forEach(s => {
       s.y -= s.speed;
-      if (s.y + s.length < 0) {
-        s.y = H + s.length;
-        s.x = Math.random() * W;
-        s.opacity = Math.random() * 0.08 + 0.02;
-      }
-      const grad = ctx.createLinearGradient(
-        s.x, s.y,
-        s.x + Math.cos(s.angle) * s.length,
-        s.y + Math.sin(s.angle) * s.length
-      );
-      grad.addColorStop(0, `rgba(201,168,76,0)`);
-      grad.addColorStop(0.5, `rgba(201,168,76,${s.opacity})`);
-      grad.addColorStop(1, `rgba(201,168,76,0)`);
+      if (s.y + s.len < 0) Object.assign(s, makeStreak(false));
+      const g = ctx.createLinearGradient(s.x, s.y, s.x, s.y - s.len);
+      g.addColorStop(0, `rgba(201,168,76,0)`);
+      g.addColorStop(0.5, `rgba(201,168,76,${s.alpha})`);
+      g.addColorStop(1, `rgba(201,168,76,0)`);
       ctx.save();
-      ctx.strokeStyle = grad;
+      ctx.strokeStyle = g;
       ctx.lineWidth = s.width;
       ctx.beginPath();
       ctx.moveTo(s.x, s.y);
-      ctx.lineTo(s.x + Math.cos(s.angle) * s.length, s.y + Math.sin(s.angle) * s.length);
+      ctx.lineTo(s.x, s.y - s.len);
       ctx.stroke();
       ctx.restore();
     });
-  }
 
-  let animFrame;
-  function animate() {
-    ctx.clearRect(0, 0, W, H);
-    drawStreaks();
-    particles.forEach(p => { p.update(); p.draw(); });
-    animFrame = requestAnimationFrame(animate);
-  }
-  animate();
+    // dots
+    particles.forEach((p, i) => {
+      p.x += p.vx;
+      p.y += p.vy;
+      if (p.grow) { p.life += p.decay; if (p.life >= 1) { p.life = 1; p.grow = false; } }
+      else        { p.life -= p.decay * 0.7; if (p.life <= 0) particles[i] = makeParticle(false); }
+      if (p.y < -10 || p.x < -10 || p.x > W + 10) particles[i] = makeParticle(false);
 
-  // Pause when hero is off screen
-  const heroObserver = new IntersectionObserver(entries => {
-    entries.forEach(entry => {
-      if (!entry.isIntersecting) {
-        cancelAnimationFrame(animFrame);
-      } else {
-        animate();
-      }
+      const a = p.alpha * p.life;
+      ctx.save();
+      ctx.globalAlpha = a;
+      ctx.fillStyle = `rgb(${p.color})`;
+      ctx.shadowBlur = p.size * 5;
+      ctx.shadowColor = `rgba(${p.color}, 0.5)`;
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
     });
+
+    animId = requestAnimationFrame(draw);
+  }
+  draw();
+
+  // pause when hero scrolls out
+  const heroObs = new IntersectionObserver(entries => {
+    if (!entries[0].isIntersecting) { cancelAnimationFrame(animId); }
+    else { draw(); }
   });
-  heroObserver.observe(document.getElementById('hero'));
+  heroObs.observe(document.getElementById('hero'));
 })();
 
 // ===== LIGHTBOX =====
 (function initLightbox() {
-  const lightbox = document.getElementById('lightbox');
-  const lightboxImg = document.getElementById('lightboxImg');
-  const lightboxClose = document.getElementById('lightboxClose');
-  const lightboxPrev = document.getElementById('lightboxPrev');
-  const lightboxNext = document.getElementById('lightboxNext');
-  const items = Array.from(document.querySelectorAll('.gallery-item img'));
-  let current = 0;
+  const lb      = document.getElementById('lightbox');
+  const lbImg   = document.getElementById('lbImg');
+  const lbClose = document.getElementById('lbClose');
+  const lbPrev  = document.getElementById('lbPrev');
+  const lbNext  = document.getElementById('lbNext');
+  const imgs    = Array.from(document.querySelectorAll('.g-item img'));
+  let cur = 0;
 
-  function open(index) {
-    current = index;
-    lightboxImg.src = items[current].src;
-    lightboxImg.alt = items[current].alt;
-    lightbox.classList.add('open');
+  function open(i) {
+    cur = i;
+    lbImg.src = imgs[cur].src;
+    lbImg.alt = imgs[cur].alt;
+    lb.classList.add('open');
     document.body.style.overflow = 'hidden';
   }
-
   function close() {
-    lightbox.classList.remove('open');
+    lb.classList.remove('open');
     document.body.style.overflow = '';
-    lightboxImg.src = '';
+    lbImg.src = '';
   }
+  function prev() { cur = (cur - 1 + imgs.length) % imgs.length; lbImg.src = imgs[cur].src; }
+  function next() { cur = (cur + 1) % imgs.length;               lbImg.src = imgs[cur].src; }
 
-  function prev() { current = (current - 1 + items.length) % items.length; lightboxImg.src = items[current].src; }
-  function next() { current = (current + 1) % items.length; lightboxImg.src = items[current].src; }
-
-  document.querySelectorAll('.gallery-item').forEach((item, i) => {
-    item.addEventListener('click', () => open(i));
-  });
-
-  lightboxClose.addEventListener('click', close);
-  lightboxPrev.addEventListener('click', prev);
-  lightboxNext.addEventListener('click', next);
-
-  lightbox.addEventListener('click', (e) => {
-    if (e.target === lightbox) close();
-  });
-
-  document.addEventListener('keydown', (e) => {
-    if (!lightbox.classList.contains('open')) return;
-    if (e.key === 'Escape') close();
-    if (e.key === 'ArrowLeft') prev();
-    if (e.key === 'ArrowRight') next();
+  document.querySelectorAll('.g-item').forEach((el, i) => el.addEventListener('click', () => open(i)));
+  lbClose.addEventListener('click', close);
+  lbPrev.addEventListener('click', prev);
+  lbNext.addEventListener('click', next);
+  lb.addEventListener('click', e => { if (e.target === lb) close(); });
+  document.addEventListener('keydown', e => {
+    if (!lb.classList.contains('open')) return;
+    if (e.key === 'Escape')      close();
+    if (e.key === 'ArrowLeft')   prev();
+    if (e.key === 'ArrowRight')  next();
   });
 })();
 
 // ===== VIDEO MODAL =====
 (function initVideoModal() {
-  const modal = document.getElementById('videoModal');
-  const iframe = document.getElementById('videoIframe');
-  const closeBtn = document.getElementById('videoModalClose');
+  const modal    = document.getElementById('videoModal');
+  const iframe   = document.getElementById('vIframe');
+  const closeBtn = document.getElementById('vModalClose');
 
-  document.querySelectorAll('.video-thumb[data-videoid]').forEach(thumb => {
+  document.querySelectorAll('.v-thumb[data-vid]').forEach(thumb => {
     thumb.addEventListener('click', () => {
-      const videoId = thumb.dataset.videoid;
-      iframe.src = `https://www.youtube.com/embed/${videoId}?autoplay=1&rel=0&modestbranding=1`;
+      const vid = thumb.dataset.vid;
+      iframe.src = `https://www.youtube.com/embed/${vid}?autoplay=1&rel=0&modestbranding=1`;
       modal.classList.add('open');
       document.body.style.overflow = 'hidden';
     });
@@ -251,42 +237,8 @@ document.querySelectorAll('.reveal-up, .reveal-left, .reveal-right, .reveal-scal
   }
 
   closeBtn.addEventListener('click', closeModal);
-
-  modal.addEventListener('click', (e) => {
-    if (e.target === modal) closeModal();
-  });
-
-  document.addEventListener('keydown', (e) => {
+  modal.addEventListener('click', e => { if (e.target === modal) closeModal(); });
+  document.addEventListener('keydown', e => {
     if (e.key === 'Escape' && modal.classList.contains('open')) closeModal();
   });
 })();
-
-// ===== SMOOTH ACTIVE NAV =====
-(function initActiveNav() {
-  const sections = document.querySelectorAll('section[id]');
-  const links = document.querySelectorAll('.nav-link');
-
-  const sectionObserver = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
-      if (entry.isIntersecting) {
-        const id = entry.target.getAttribute('id');
-        links.forEach(link => {
-          link.style.color = link.getAttribute('href') === `#${id}` ? 'var(--gold)' : '';
-        });
-      }
-    });
-  }, { threshold: 0.4 });
-
-  sections.forEach(s => sectionObserver.observe(s));
-})();
-
-// ===== LOGO FALLBACK =====
-document.querySelectorAll('.hero-logo, .footer-logo, .logo-img').forEach(img => {
-  img.addEventListener('error', function() {
-    this.style.display = 'none';
-    const fallback = document.createElement('span');
-    fallback.textContent = 'GARY KEYZ';
-    fallback.style.cssText = 'font-family:var(--font-display);font-size:2rem;letter-spacing:0.2em;color:var(--gold);';
-    this.parentNode.insertBefore(fallback, this.nextSibling);
-  });
-});
