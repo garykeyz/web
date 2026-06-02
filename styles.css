@@ -490,10 +490,10 @@ a   { color: inherit; text-decoration: none; }
 }
 
 .hero-title {
-  font-family: 'Protest Riot', sans-serif;
-  font-size: clamp(3.8rem, 11.5vw, 10rem);
-  line-height: 0.95;
-  letter-spacing: -0.01em;
+  font-family: 'Sedgwick Ave Display', cursive;
+  font-size: clamp(4rem, 12vw, 10.5rem);
+  line-height: 1.0;
+  letter-spacing: 0.03em;
   text-transform: uppercase;
   color: var(--white);
   margin-bottom: 28px;
@@ -1320,7 +1320,7 @@ a   { color: inherit; text-decoration: none; }
   .services-grid { grid-template-columns: 1fr; }
   .videos-grid { grid-template-columns: 1fr; }
   .clients-grid { grid-template-columns: repeat(2, 1fr); }
-  .hero-title { font-size: clamp(4rem, 18vw, 6.5rem); }
+  .hero-title { font-size: clamp(3.5rem, 17vw, 6rem); }
   .social-block { padding: 24px 18px; }
   #footer { padding-bottom: 28px; }
 }
